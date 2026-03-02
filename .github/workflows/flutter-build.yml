@@ -1,0 +1,94 @@
+name: Flutter Build and Analysis
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.0.0'
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Run analyzer
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Build APK
+        env:
+          HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
+        run: flutter build apk --dart-define=HUGGINGFACE_API_KEY=$HUGGINGFACE_API_KEY
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-release.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+  ios-build:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.0.0'
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build iOS
+        env:
+          HUGGINGFACE_API_KEY: ${{ secrets.HUGGINGFACE_API_KEY }}
+        run: flutter build ios --dart-define=HUGGINGFACE_API_KEY=$HUGGINGFACE_API_KEY --no-codesign
+
+  code-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.0.0'
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Analyze code
+        run: flutter analyze
+
+      - name: Format check
+        run: dart format --set-exit-if-changed lib/
+
+      - name: Security check
+        run: |
+          # Check for hardcoded secrets pattern
+          if grep -r "hf_[A-Za-z0-9]\{20\}" lib/ --include="*.dart"; then
+            echo "ERROR: Potential hardcoded HuggingFace token found!"
+            exit 1
+          fi
+
+      - name: Check for .env in repo
+        run: |
+          if [ -f ".env" ]; then
+            echo "ERROR: .env file should not be in repository!"
+            exit 1
+          fi
+
