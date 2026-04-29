@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/history_screen.dart';
 import 'providers/translation_provider.dart';
+import 'screens/main_shell.dart';
 
 void main() {
   runApp(const MyApp());
@@ -33,7 +34,7 @@ class MyApp extends StatelessWidget {
             brightness: Brightness.dark,
           ),
         ),
-        home: const HomeScreen(),
+        home: const MainShell(),
       ),
     );
   }

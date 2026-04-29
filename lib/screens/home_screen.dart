@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../providers/translation_provider.dart';
 import '../services/translation_service.dart';
-import 'history_screen.dart';
+//import 'history_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -14,17 +14,6 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Translator App'),
         elevation: 2,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.history),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const HistoryScreen()),
-              );
-            },
-          ),
-        ],
       ),
       body: SafeArea(
         child: Column(
@@ -166,13 +155,21 @@ class InputTextArea extends StatelessWidget {
                 onChanged: provider.setInputText,
               ),
               if (provider.inputText.isNotEmpty)
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: provider.clearInput,
-                  ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                IconButton(
+                icon: Icon(provider.isSpeaking ? Icons.stop : Icons.volume_up),
+                onPressed: provider.isSpeaking
+                ? provider.stopSpeaking
+                    : provider.speakInput,
                 ),
+                IconButton(
+                icon: const Icon(Icons.clear),
+                onPressed: provider.clearInput,
+                ),
+        ]
+              ),
             ],
           ),
         );
@@ -205,14 +202,24 @@ class OutputTextArea extends StatelessWidget {
                 children: [
                   Text('Kết quả dịch:', style: TextStyle(color: Colors.blue.shade800, fontWeight: FontWeight.bold)),
                   if (provider.outputText.isNotEmpty)
-                    IconButton(
-                      icon: const Icon(Icons.copy, size: 20),
-                      onPressed: () {
-                        Clipboard.setData(ClipboardData(text: provider.outputText));
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Đã sao chép!'), duration: Duration(seconds: 1)),
-                        );
-                      },
+                    Row(
+                      children: [
+                        IconButton(
+                          icon: Icon(provider.isSpeaking ? Icons.stop : Icons.volume_up, size: 20),
+                          onPressed: provider.isSpeaking
+                              ? provider.stopSpeaking
+                              : provider.speakOutput,
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.copy, size: 20),
+                          onPressed: () {
+                            Clipboard.setData(ClipboardData(text: provider.outputText));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Đã sao chép!'), duration: Duration(seconds: 1)),
+                            );
+                          },
+                        ),
+                      ],
                     ),
                 ],
               ),

@@ -3,6 +3,7 @@ import '../services/translation_service.dart';
 import '../models/translation_history.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import '../services/tts_service.dart';
 
 class TranslationProvider extends ChangeNotifier {
   final TranslationService _service = TranslationService();
@@ -14,7 +15,6 @@ class TranslationProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   List<TranslationHistory> _history = [];
-  int _retryCount = 0;
 
   String get sourceLanguage => _sourceLanguage;
   String get targetLanguage => _targetLanguage;
@@ -26,6 +26,7 @@ class TranslationProvider extends ChangeNotifier {
 
   TranslationProvider() {
     _loadHistory();
+    _loadFavorites();
   }
 
   void setSourceLanguage(String lang) {
@@ -67,7 +68,6 @@ class TranslationProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Gọi service mới
       final result = await _service.translate(
         text: _inputText,
         sourceLanguage: _sourceLanguage,
@@ -75,25 +75,6 @@ class TranslationProvider extends ChangeNotifier {
       );
 
       _outputText = result;
-    } catch (e) {
-      _error = e.toString().replaceAll('Exception: ', '');
-      _outputText = '';
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  Future<void> _performTranslation() async {
-    try {
-      final result = await _service.translate(
-        text: _inputText,
-        sourceLanguage: _sourceLanguage,
-        targetLanguage: _targetLanguage,
-      );
-
-      _outputText = result;
-      _retryCount = 0;
 
       final historyItem = TranslationHistory(
         sourceText: _inputText,
@@ -109,21 +90,8 @@ class TranslationProvider extends ChangeNotifier {
       }
 
       await _saveHistory();
-
     } catch (e) {
-      final errorMsg = e.toString();
-
-      if (errorMsg.contains('Model đang') && _retryCount < 2) {
-        _retryCount++;
-        _error = 'Đang khởi động model... (Lần thử ${_retryCount}/2)';
-        notifyListeners();
-
-        await Future.delayed(const Duration(seconds: 20));
-        await _performTranslation();
-        return;
-      }
-
-      _error = errorMsg.replaceAll('Exception: ', '');
+      _error = e.toString().replaceAll('Exception: ', '');
       _outputText = '';
     } finally {
       _isLoading = false;
@@ -131,11 +99,12 @@ class TranslationProvider extends ChangeNotifier {
     }
   }
 
+
+
   void clearInput() {
     _inputText = '';
     _outputText = '';
     _error = null;
-    _retryCount = 0;
     notifyListeners();
   }
 
@@ -157,7 +126,7 @@ class TranslationProvider extends ChangeNotifier {
       final jsonString = prefs.getString('translation_history');
 
       if (jsonString != null) {
-        final List<dynamic> decodedList = jsonDecode('translation_history');
+        final List<dynamic> decodedList = jsonDecode(jsonString);
         _history = decodedList
             .map((json) => TranslationHistory.fromJson(json))
             .toList();
@@ -166,5 +135,87 @@ class TranslationProvider extends ChangeNotifier {
     } catch (e) {
       print('Error loading history: $e');
     }
+  }
+  List<TranslationHistory> _favorites = [];
+  List<TranslationHistory> get favorites => _favorites;
+
+  String _favKey(TranslationHistory item) {
+    return '${item.sourceLanguage}|${item.targetLanguage}|${item.sourceText}|${item.translatedText}';
+  }
+
+  bool isFavorite(TranslationHistory item) {
+    final k = _favKey(item);
+    return _favorites.any((f) => _favKey(f) == k);
+  }
+
+  Future<void> toggleFavorite(TranslationHistory item) async {
+    final k = _favKey(item);
+    final idx = _favorites.indexWhere((f) => _favKey(f) == k);
+
+    if (idx >= 0) {
+      _favorites.removeAt(idx);
+    } else {
+      _favorites.insert(0, item);
+    }
+
+    await _saveFavorites();
+    notifyListeners();
+  }
+
+  Future<void> _saveFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonList = _favorites.map((h) => h.toJson()).toList();
+    await prefs.setString('translation_favorites', jsonEncode(jsonList));
+  }
+
+  Future<void> _loadFavorites() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString('translation_favorites');
+      if (jsonString == null) return;
+
+      final List<dynamic> decodedList = jsonDecode(jsonString);
+      _favorites = decodedList.map((j) => TranslationHistory.fromJson(j)).toList();
+      notifyListeners();
+    } catch (_) {}
+  }
+  final TtsService _tts = TtsService();
+  bool get isSpeaking => _tts.isPlaying;
+
+  Future<void> speakInput() async {
+    if (_inputText.isEmpty) return;
+    await _tts.speak(_inputText, _sourceLanguage);
+    notifyListeners();
+  }
+
+  Future<void> speakOutput() async {
+    if (_outputText.isEmpty) return;
+    await _tts.speak(_outputText, _targetLanguage);
+    notifyListeners();
+  }
+
+  Future<void> stopSpeaking() async {
+    await _tts.stop();
+    notifyListeners();
+  }
+  // them chuc nang xoa khi quet ngang man hinh
+  Future<void> removeHistoryItem(TranslationHistory item) async {
+    _history.removeWhere((h) =>
+    h.sourceText == item.sourceText &&
+        h.translatedText == item.translatedText &&
+        h.sourceLanguage == item.sourceLanguage &&
+        h.targetLanguage == item.targetLanguage &&
+        h.timestamp == item.timestamp);
+
+    await _saveHistory();
+    notifyListeners();
+  }
+
+  Future<void> removeFavoriteItem(TranslationHistory item) async {
+    final k = _favKey(item);
+    _favorites.removeWhere((f) => _favKey(f) == k);
+
+    await _saveFavorites();
+    notifyListeners();
   }
 }
