@@ -33,5 +33,5 @@ Trans-App là ứng dụng di động được phát triển bằng Flutter, h�
    ```
 ## Đóng góp
 Mọi đóng góp hoặc pull request đều được hoan nghênh.
-## Giấy phép
-Dự án sử dụng giấy phép MIT.
+## Thêm
+Đây là repo demo thử nghiệm để check trước khi sử dụng api khác
