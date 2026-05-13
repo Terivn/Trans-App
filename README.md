@@ -1,88 +1,37 @@
-# MarianMT Translator App
+# Trans-App
 
-A Flutter translation application using HuggingFace's translation models (Opus-MT).
+Ứng dụng di động dịch thuật sử dụng Flutter.
 
-## Features
+## Mô tả
 
-- Real-time text translation
-- Support for multiple language pairs (English, Vietnamese, French, German)
-- Translation history with persistence
-- Swap language functionality
-- Copy translated text to clipboard
-- Dark mode support
-
-## Getting Started
-
-### Prerequisites
-
-- Flutter SDK 3.0.0+
-- Dart 3.0.0+
-- A HuggingFace API key (get it from [huggingface.co](https://huggingface.co/settings/tokens))
-
-### Setup
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd transappwithmarian
+Trans-App là ứng dụng di động được phát triển bằng Flutter, hỗ trợ dịch văn bản giữa nhiều ngôn ngữ. Ứng dụng sử dụng API của MyMemory (https://mymemory.translated.net/) để thực hiện việc dịch thuật tự động trên thiết bị Android.
+## Tính năng
+- Nhập và dịch văn bản qua nhiều ngôn ngữ bằng MyMemory API.
+- Giao diện đơn giản, dễ sử dụng.
+- Hỗ trợ Android, thử nghiệm trên web qua Flutter web.
+## Công nghệ sử dụng
+- **Flutter (Dart):** Xây dựng ứng dụng chính.
+- **API MyMemory:** Dịch văn bản tự động.
+- **HTML:** Một số thành phần trong giao diện.
+- **Khác:** Thư viện và nền tảng hỗ trợ từ hệ sinh thái Flutter.
+## Cài đặt và sử dụng
+1. Clone repository:
    ```
-
-2. **Install dependencies**
-   ```bash
+   git clone https://github.com/Terivn/Trans-App.git
+   ```
+2. Cài đặt dependencies:
+   ```
    flutter pub get
    ```
-
-3. **Configure API Key**
-   - Copy the `.env.example` file to `.env`:
-     ```bash
-     cp .env.example .env
-     ```
-   - Open `.env` and add your HuggingFace API key:
-     ```
-     HUGGINGFACE_API_KEY=your_actual_api_key_here
-     ```
-
-4. **Run the app**
-   ```bash
-   flutter run --dart-define=HUGGINGFACE_API_KEY=$(grep HUGGINGFACE_API_KEY .env | cut -d '=' -f2)
+3. Chạy ứng dụng trên thiết bị Android:
    ```
-   
-   Or on Windows PowerShell:
-   ```powershell
-   $env:HUGGINGFACE_API_KEY = (Select-String -Path .\.env -Pattern 'HUGGINGFACE_API_KEY' | ForEach-Object { $_.Line.Split('=')[1] })
-   flutter run --dart-define=HUGGINGFACE_API_KEY=$env:HUGGINGFACE_API_KEY
+   flutter run
    ```
-
-## Security Notes
-
-- **Never commit the `.env` file** - it contains sensitive API keys
-- The `.env` file is automatically excluded from git via `.gitignore`
-- Always use environment variables for sensitive credentials
-- Keep your HuggingFace API key private
-
-## Supported Language Pairs
-
-- English ↔ Vietnamese (en-vi, vi-en)
-- English ↔ French (en-fr)
-- English ↔ German (en-de)
-
-## Architecture
-
-- **Provider Pattern**: State management using the `provider` package
-- **Clean Architecture**: Separation of concerns with services, models, and providers
-- **Persistence**: Translation history saved to local storage using `shared_preferences`
-
-## Dependencies
-
-- `flutter`: Flutter SDK
-- `provider`: State management
-- `huggingface_client`: HuggingFace API client
-- `shared_preferences`: Local persistence
-- `intl`: Internationalization
-- `http`: HTTP client
-
-## For more help
-
-- [Flutter Documentation](https://docs.flutter.dev/)
-- [HuggingFace API Documentation](https://huggingface.co/docs/api-inference/quicktour)
-
+4. Nếu muốn thử trên web:
+   ```
+   flutter run -d chrome
+   ```
+## Đóng góp
+Mọi đóng góp hoặc pull request đều được hoan nghênh.
+## Giấy phép
+Dự án sử dụng giấy phép MIT.
