@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => TranslationProvider(),
       child: MaterialApp(
-        title: 'MarianMT Translator',
+        title: 'Translator',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primarySwatch: Colors.blue,

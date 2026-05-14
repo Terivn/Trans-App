@@ -15,7 +15,6 @@ dependencies:
   provider: ^6.1.1
   shared_preferences: ^2.2.3
   intl: ^0.19.0
-  huggingface_client: ^1.6.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
