@@ -12,7 +12,6 @@ Trans-App là ứng dụng di động được phát triển bằng Flutter, h�
 ## Công nghệ sử dụng
 - **Flutter (Dart):** Xây dựng ứng dụng chính.
 - **API MyMemory:** Dịch văn bản tự động.
-- **HTML:** Một số thành phần trong giao diện.
 - **Khác:** Thư viện và nền tảng hỗ trợ từ hệ sinh thái Flutter.
 ## Cài đặt và sử dụng
 1. Clone repository:
